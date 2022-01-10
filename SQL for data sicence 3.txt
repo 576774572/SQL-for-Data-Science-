@@ -1,0 +1,182 @@
+1.Using a subquery, find the names of all the tracks for the album "Californication".
+
+select trackid,name
+from tracks   
+where albumid in (select albumid from albums where title="Californication")
+
++---------+-------------------+
+| TrackId | Name              |
++---------+-------------------+
+|    2391 | Around The World  |
+|    2392 | Parallel Universe |
+|    2393 | Scar Tissue       |
+|    2394 | Otherside         |
+|    2395 | Get On Top        |
+|    2396 | Californication   |
+|    2397 | Easily            |
+|    2398 | Porcelain         |
+|    2399 | Emit Remmus       |
+|    2400 | I Like Dirt       |
++---------+-------------------+
+(Output limit exceeded, 10 of 15 total rows shown)
+
+
+
+2.Find the total number of invoices for each customer along with the customer's full name, city and email.
+
+select customers.customerid,
+       customers.FirstName,
+       customers.LastName, 
+       customers.city,
+       customers.email,
+       count(invoices.invoiceid) as num_invoices from invoices 
+left join customers
+on customers.customerid=invoices.customerid
+group by invoices.customerid 
+
++------------+-----------+-------------+---------------------+--------------------------+--------------+
+| CustomerId | FirstName | LastName    | City                | Email                    | num_invoices |
++------------+-----------+-------------+---------------------+--------------------------+--------------+
+|          1 | Luís      | Gonçalves   | São José dos Campos | luisg@embraer.com.br     |            7 |
+|          2 | Leonie    | Köhler      | Stuttgart           | leonekohler@surfeu.de    |            7 |
+|          3 | François  | Tremblay    | Montréal            | ftremblay@gmail.com      |            7 |
+|          4 | Bjørn     | Hansen      | Oslo                | bjorn.hansen@yahoo.no    |            7 |
+|          5 | František | Wichterlová | Prague              | frantisekw@jetbrains.com |            7 |
+|          6 | Helena    | Holý        | Prague              | hholy@gmail.com          |            7 |
+|          7 | Astrid    | Gruber      | Vienne              | astrid.gruber@apple.at   |            7 |
+|          8 | Daan      | Peeters     | Brussels            | daan_peeters@apple.be    |            7 |
+|          9 | Kara      | Nielsen     | Copenhagen          | kara.nielsen@jubii.dk    |            7 |
+|         10 | Eduardo   | Martins     | São Paulo           | eduardo@woodstock.com.br |            7 |
++------------+-----------+-------------+---------------------+--------------------------+--------------+
+(Output limit exceeded, 10 of 59 total rows shown)
+
+3.Retrieve the track name, album, artistID, and trackID for all the albums.
+
+select * 
+from(
+select 
+    tracks.name as trackname,
+    albums.title albumtitle,
+    albums.artistID,   
+    tracks.trackid
+from tracks
+left join albums
+ON albums.AlbumId =tracks.AlbumId     
+)
+where TrackId =12
+
++--------------------+---------------------------------------+----------+---------+
+| trackname          | albumtitle                            | artistID | trackid |
++--------------------+---------------------------------------+----------+---------+
+| Breaking The Rules | For Those About To Rock We Salute You |        1 |      12 |
++--------------------+---------------------------------------+----------+---------+
+
+4.Retrieve a list with the managers last name, and the last name of the employees who report to him or her.
+
+SELECT  
+    second.LastName as EmployeeLastName,  
+    second.reportsto, 
+    first.LastName as ManagersLastName 
+from employees first, employees second
+where first.EmployeeId=second.reportsto
+
++------------------+-----------+------------------+
+| EmployeeLastName | ReportsTo | ManagersLastName |
++------------------+-----------+------------------+
+| Edwards          |         1 | Adams            |
+| Mitchell         |         1 | Adams            |
+| Peacock          |         2 | Edwards          |
+| Park             |         2 | Edwards          |
+| Johnson          |         2 | Edwards          |
+| King             |         6 | Mitchell         |
+| Callahan         |         6 | Mitchell         |
++------------------+-----------+------------------+
+
+5.Find the name and ID of the artists who do not have albums.
+
+select *
+from(
+select artists.artistid, artists.name,albums.title
+from artists
+left join albums
+on  artists.artistid=albums.artistid 
+)
+where Title is null
+
++----------+----------------------------+-------+
+| artistid | name                       | title |
++----------+----------------------------+-------+
+|       25 | Milton Nascimento & Bebeto |  None |
+|       26 | Azymuth                    |  None |
+|       28 | João Gilberto              |  None |
+|       29 | Bebel Gilberto             |  None |
+|       30 | Jorge Vercilo              |  None |
+|       31 | Baby Consuelo              |  None |
+|       32 | Ney Matogrosso             |  None |
+|       33 | Luiz Melodia               |  None |
+|       34 | Nando Reis                 |  None |
+|       35 | Pedro Luís & A Parede      |  None |
++----------+----------------------------+-------+
+(Output limit exceeded, 10 of 71 total rows shown)
+
+6.Use a UNION to create a list of all the employee's and customer's first names and last names ordered by the last name in descending order.
+
+SELECT * 
+FROM
+(
+SELECT firstname,lastname FROM employees
+union all
+SELECT firstname,lastname FROM customers 
+)
+order by lastname desc
+
++-----------+--------------+
+| firstname | lastname     |
++-----------+--------------+
+| Fynn      | Zimmermann   |
+| Stanisław | Wójcik       |
+| František | Wichterlová  |
+| Johannes  | Van der Berg |
+| François  | Tremblay     |
+| Mark      | Taylor       |
+| Ellie     | Sullivan     |
+| Victor    | Stevens      |
+| Puja      | Srivastava   |
+| Jack      | Smith        |
++-----------+--------------+
+(Output limit exceeded, 10 of 67 total rows shown)
+
+7.See if there are any customers who have a different city listed in their billing city versus their customer city.
+
+select 
+    customers.customerid,
+    count(customers.customerid) as CustomersNum,
+    customers.city,
+    invoices.billingcity 
+from customers
+left join invoices
+on customers.customerid = invoices.customerid
+group by customers.customerid
+having customers.City = invoices.BillingCity
+
++------------+--------------+---------------------+---------------------+
+| CustomerId | CustomersNum | City                | BillingCity         |
++------------+--------------+---------------------+---------------------+
+|          1 |            7 | São José dos Campos | São José dos Campos |
+|          2 |            7 | Stuttgart           | Stuttgart           |
+|          3 |            7 | Montréal            | Montréal            |
+|          4 |            7 | Oslo                | Oslo                |
+|          5 |            7 | Prague              | Prague              |
+|          6 |            7 | Prague              | Prague              |
+|          7 |            7 | Vienne              | Vienne              |
+|          8 |            7 | Brussels            | Brussels            |
+|          9 |            7 | Copenhagen          | Copenhagen          |
+|         10 |            7 | São Paulo           | São Paulo           |
++------------+--------------+---------------------+---------------------+
+(Output limit exceeded, 10 of 59 total rows shown)
+
+
+
+
+
+
